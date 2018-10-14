@@ -40,7 +40,36 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         return this
     };
 
-
+    //todo: if type = enum('Y', 'N')
+    c.type = function(type, length) {
+        if (types.indexOf(type.toUpperCase()) < 0) added.had_error = "TYPE '"+type+"' IS INCORRECT !";
+        added.type = type.toUpperCase(); if (length!==undefined) added.type_length = length; return this };
+    c.notNull = function () { added.isNull = false; return this };
+    c.null = function () { added.isNull = true; return this };
+    c.default = function (text) { added.has_default = text; return this };
+    c.comment = function (comment) { added.comment = comment; return this };
+    c.primaryKey = function () { added.pk.push(added.column); return this };
+    c.unique = function () { added.unique.push(added.column); return this };
+    c.foreignKey = function (column, target_table, target_table_column) {
+        added.fk.push({column: column, tar_table: target_table, tar_col: target_table_column, onDelete: null, onUpdate: null});
+        return this
+    };
+    c.onUpdate = function (action) {
+        if (!added.fk.length) {
+            added.had_error = "CANNOT SET ON UPDATE, DEFINE FOREIGN KEY FIRST !";
+            return this
+        }
+        added.fk[added.fk.length-1].onUpdate = action.toUpperCase();
+        return this
+    };
+    c.onDelete = function (action) {
+        if (!added.fk.length) {
+            added.had_error = "CANNOT SET ON DELETE, DEFINE FOREIGN KEY FIRST !";
+            return this
+        }
+        added.fk[added.fk.length-1].onDelete = action.toUpperCase();
+        return this
+    };
 
     inject = function () {
         var defaultVal = typeof added.has_default === "number" ? added.has_default : "'"+added.has_default+"'";
@@ -54,7 +83,18 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         else if (typeof added.type_length === "number") {
             length = added.type_length;
         }
-        
+
+        if (added.type==="VARCHAR" && added.type_length===undefined)
+            length = 100;
+
+        concat += (added.firstLoop?"":", ")+"`" + added.column + "` " + added.type + (length===''?"":"(" + length + ")") + " " + (added.isNull ? "NULL" : "NOT NULL") + (added.has_default!==undefined ? " DEFAULT "+defaultVal : "")+(added.comment!==undefined ?" COMMENT '"+added.comment+"'":"");
+        added.firstLoop = false;
+        //reset
+        added.type = reset.type;
+        added.type_length = reset.type_length;
+        added.isNull = reset.isNull;
+        added.comment = reset.comment;
+        added.has_default = reset.has_default;
     };
     keyDefine = function () {
         //add created_at, updated_at
@@ -92,9 +132,83 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
     return c;
 };
 module.exports = {
+    /**
+     * @param table
+     * @param sqlValue
+     * @returns {query}
+     *
+     * === Example ===
+     * {ID: "INT NOT NULL AUTO_INCREMENT",
+     * province_id: "INT(3) NOT NULL",
+     * name: "varchar(255) NOT NULL",
+     * geo_id": "TINYINT(2) NULL",
+     * province_id": "INT(4) NOT NULL DEFAULT '0' COMMENT 'มอ ใน ID จังหวัด'"}
+     */
+    /*
+     CREATE TABLE `users` (
+     `id` INT NOT NULL AUTO_INCREMENT,
+     `username` VARCHAR(50) NOT NULL,
+     `password` VARCHAR(80) NOT NULL DEFAULT 'test',
+     `enum` ENUM('Y','N') NOT NULL DEFAULT 'Y',
+     `created_at` DATETIME NOT NULL,
+     `updated_at` DATETIME NOT NULL,
+     PRIMARY KEY (`id`),
+     UNIQUE INDEX `username` (`username`)
+     )
+     COMMENT='all user will store here'
+     COLLATE='utf8_general_ci'
+     ENGINE=InnoDB
+     ;
+     */
+    createTable: function (table, table_comment) {
+        return create(false, table, table_comment);
+    },
 
     createTableIfNotExist: function (table, table_comment, auto_id = true, timestamp = true) {
         return create(true, table, table_comment, auto_id, timestamp);
-    }
+    },
 
+    customQuery: function (table, sqlValue, primaryKey) {
+        // var last = Object.keys(sqlValue)[Object.keys(sqlValue).length-1];
+        var valText = "`id` NOT NULL AUTO_INCREMENT, ";
+
+        if (typeof sqlValue === "object") {
+            for (var k in sqlValue) {
+                valText += "`"+k+"` "+sqlValue[k]+', ';
+            }
+        }else {
+            valText += sqlValue;
+        }
+        valText+= "`created_at`"
+        valText+= "CONSTRAINT PK_Person PRIMARY KEY (id)";
+        return "CREATE TABLE IF NOT EXISTS `"+table+"` ("+valText+") ENGINE=InnoDB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+    },
+
+    dropTableIfExist: function (table) {
+        return "DROP TABLE IF EXISTS `"+table+"`";
+    },
+
+    //for auto complete
+    type: {
+        VARCHAR: 'VARCHAR',
+        CHAR: 'CHAR',
+        TINYTEXT: 'TINYTEXT',
+        TEXT: 'TEXT',
+        MEDIUMTEXT: 'MEDIUMTEXT',
+        LONGTEXT: 'LONGTEXT',
+        JSON: 'JSON',
+        FLOAT: 'FLOAT',
+        DOUBLE: 'DOUBLE',
+        DECIMAL: 'DECIMAL',
+        TINYINT: 'TINYINT',
+        SMALLINT: 'SMALLINT',
+        MEDIUMINT: 'MEDIUMINT',
+        INT: 'INT',
+        BIGINT: 'BIGINT',
+        BIT: 'BIT'
+    },
+
+    default: {
+        CURRENT_TIMESTAMP: 'CURRENT_TIMESTAMP'
+    }
 };
