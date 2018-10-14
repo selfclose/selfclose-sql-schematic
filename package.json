@@ -4,7 +4,7 @@
   "description": "sql builder of create table for build schematic, Light, Simple, Easy to use.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/simple.js"
   },
   "repository": {
     "type": "git",
