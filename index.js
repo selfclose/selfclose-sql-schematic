@@ -1,7 +1,26 @@
 /**
  * @author https://github.com/selfclose
+ * For Javascript ES6
  */
-var types = ['VARCHAR', 'CHAR', 'TINYTEXT', 'TEXT', 'MEDIUMTEXT', 'LONGTEXT', 'JSON', 'FLOAT', 'DOUBLE', 'DECIMAL', 'TINYINT', 'SMALLINT', 'MEDIUMINT','INT','BIGINT','BIT'];
+const types = {
+    VARCHAR: 'VARCHAR',
+    CHAR: 'CHAR',
+    TINYTEXT: 'TINYTEXT',
+    TEXT: 'TEXT',
+    MEDIUMTEXT: 'MEDIUMTEXT',
+    LONGTEXT: 'LONGTEXT',
+    JSON: 'JSON',
+    FLOAT: 'FLOAT',
+    DOUBLE: 'DOUBLE',
+    DECIMAL: 'DECIMAL',
+    TINYINT: 'TINYINT',
+    SMALLINT: 'SMALLINT',
+    MEDIUMINT: 'MEDIUMINT',
+    INT: 'INT',
+    BIGINT: 'BIGINT',
+    BIT: 'BIT'
+};
+
 var create = function (ifNotExist, table, table_comment, auto_id = true, add_timestamp = true) {
 
     //todo: auto_id can turn of
@@ -42,7 +61,7 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
 
     //todo: if type = enum('Y', 'N')
     c.type = function(type, length) {
-        if (types.indexOf(type.toUpperCase()) < 0) added.had_error = "TYPE '"+type+"' IS INCORRECT !";
+        if (!types[type.toUpperCase()]) added.had_error = "TYPE '"+type+"' IS INCORRECT !";
         added.type = type.toUpperCase(); if (length!==undefined) added.type_length = length; return this };
     c.notNull = function () { added.isNull = false; return this };
     c.null = function () { added.isNull = true; return this };
@@ -160,12 +179,12 @@ module.exports = {
      ENGINE=InnoDB
      ;
      */
-    createTable: function (table, table_comment) {
-        return create(false, table, table_comment);
+    createTable: function (table, {comment}) {
+        return create(false, table, comment);
     },
 
-    createTableIfNotExist: function (table, table_comment, auto_id = true, timestamp = true) {
-        return create(true, table, table_comment, auto_id, timestamp);
+    createTableIfNotExist: function (table, {comment, id = true, timestamp = true}) {
+        return create(true, table, comment, id, timestamp);
     },
 
     customQuery: function (table, sqlValue, primaryKey) {
@@ -189,24 +208,7 @@ module.exports = {
     },
 
     //for auto complete
-    type: {
-        VARCHAR: 'VARCHAR',
-        CHAR: 'CHAR',
-        TINYTEXT: 'TINYTEXT',
-        TEXT: 'TEXT',
-        MEDIUMTEXT: 'MEDIUMTEXT',
-        LONGTEXT: 'LONGTEXT',
-        JSON: 'JSON',
-        FLOAT: 'FLOAT',
-        DOUBLE: 'DOUBLE',
-        DECIMAL: 'DECIMAL',
-        TINYINT: 'TINYINT',
-        SMALLINT: 'SMALLINT',
-        MEDIUMINT: 'MEDIUMINT',
-        INT: 'INT',
-        BIGINT: 'BIGINT',
-        BIT: 'BIT'
-    },
+    type: types,
 
     default: {
         CURRENT_TIMESTAMP: 'CURRENT_TIMESTAMP'
