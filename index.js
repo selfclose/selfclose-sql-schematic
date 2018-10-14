@@ -21,6 +21,15 @@ const types = {
     BIT: 'BIT'
 };
 
+const action = {
+    DELETE: 'DELETE',
+    CASCADE: 'CASCADE',
+    SET_NULL: 'SET NULL',
+    NO_ACTION: 'NO ACTION',
+    RESTRICT: 'RESTRICT',
+    SET_DEFAULT: 'SET DEFAULT'
+};
+
 var create = function (ifNotExist, table, table_comment, auto_id = true, add_timestamp = true) {
 
     //todo: auto_id can turn of
@@ -209,6 +218,7 @@ module.exports = {
 
     //for auto complete
     type: types,
+    action: action,
 
     default: {
         CURRENT_TIMESTAMP: 'CURRENT_TIMESTAMP'

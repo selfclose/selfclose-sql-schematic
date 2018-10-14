@@ -1,10 +1,17 @@
 # selfclose-sql-schematic
 NodeJS modules is mysql schematic builder, or create table if not exists helper
 
-This package will forge query string for **MySQL / MariaDB**
+This package
+* forge query string for **MySQL / MariaDB**
+* No dependencies
+* Extreme Light
 
 ## Installation
 `npm i --save selfclose-sql-schematic`
+
+##### Todo
+* add set timestamp option
+* add emum type
 
 ## Currently Written:
 - MySQL / MariaDB
@@ -27,10 +34,50 @@ s.add('permalink').type(schema.type.VARCHAR, 120).notNull().unique();
 console.log('MYSQL', s.toString());
 ```
 
-And You'll get
+**And You'll get**
 ```mysql
 CREATE TABLE IF NOT EXISTS `post` (`id` INT NOT NULL AUTO_INCREMENT, `enabled` TINYINT(4) NOT NULL DEFAULT 1, `title` VARCHAR(60) NOT NULL, `type` VARCHAR(60) NOT NULL DEFAULT 'post', `permalink` VARCHAR(120) NOT NULL, `created_at` DATETIME NOT NULL,
 `updated_at` DATETIME NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `permalink` (`permalink`)) COMMENT='this is post table' COLLATE='utf8_general_ci' ENGINE=InnoDB
 ```
+
+Then, Take these query string to mysql query function
+
+sql.query(s.toString());
+
+# Methods
+First create variable
+```javascript
+var schema = FunctionHere()
+```
+#### Functions
+* createTable(table_name, [options](#options))
+* createTableIfNotExist(table_name, [options](#options))
+
+### Options
+(Values as shown is default)
+```javascript
+{
+    comment: '',
+    id: true, //Auto create id column with auto increment and primary key
+    timestamp: true, //Auto create 'created_at' and 'updated_at'
+    timestamp_type: 'DATETIME' // type can be 'DATETIME' or 'NUMBER'
+}
+```
+
+Next will be chain functions
+
+#### Chain Function
+Most of theme already mysql syntax
+* add(column name)
+* type(type name)
+* notNull()
+* unique()
+* default(value)
+* comment(column comment)
+* primaryKey()
+* foreignKey(column, target_table, target_table_column)
+* onUpdate(action)
+* onDelete(action)
+* toString() //End of chain for **Return Query String**
 
 ##--WILL CONTINUE WRITE README SOON--
