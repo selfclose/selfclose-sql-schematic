@@ -3,22 +3,34 @@
  * For Javascript ES6
  */
 const types = {
-    VARCHAR: 'VARCHAR',
-    CHAR: 'CHAR',
-    TINYTEXT: 'TINYTEXT',
-    TEXT: 'TEXT',
-    MEDIUMTEXT: 'MEDIUMTEXT',
-    LONGTEXT: 'LONGTEXT',
-    JSON: 'JSON',
-    FLOAT: 'FLOAT',
-    DOUBLE: 'DOUBLE',
-    DECIMAL: 'DECIMAL',
-    TINYINT: 'TINYINT',
-    SMALLINT: 'SMALLINT',
-    MEDIUMINT: 'MEDIUMINT',
-    INT: 'INT',
+    BINARY: 'BINARY',
+    BLOB: 'BLOB',
     BIGINT: 'BIGINT',
-    BIT: 'BIT'
+    BIT: 'BIT',
+    CHAR: 'CHAR',
+    DATETIME: 'DATETIME',
+    DATE: 'DATE',
+    DECIMAL: 'DECIMAL',
+    DOUBLE: 'DOUBLE',
+    ENUM: 'ENUM',
+    FLOAT: 'FLOAT',
+    INT: 'INT',
+    JSON: 'JSON',
+    LONGBLOB: 'LONGBLOB',
+    LONGTEXT: 'LONGTEXT',
+    MEDIUMBLOB: 'MEDIUMBLOB',
+    MEDIUMINT: 'MEDIUMINT',
+    MEDIUMTEXT: 'MEDIUMTEXT',
+    SMALLINT: 'SMALLINT',
+    SET: 'SET',
+    TEXT: 'TEXT',
+    TINYBLOB: 'TINYBLOB',
+    TINYINT: 'TINYINT',
+    TINYTEXT: 'TINYTEXT',
+    TIME: 'TIME',
+    TIMESTAMP: 'TIMESTAMP',
+    VARCHAR: 'VARCHAR',
+    YEAR: 'YEAR'
 };
 
 const action = {
@@ -85,7 +97,7 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
 
     //todo: if type = enum('Y', 'N')
     c.type = function(type, length) {
-        if (!types[type.toUpperCase()]) added.had_error = "TYPE '"+type+"' IS INCORRECT !";
+        if (!types[type]) added.had_error = "TYPE '"+type+"' IS INCORRECT !";
         added.type = type.toUpperCase(); if (length!==undefined) added.type_length = length; return this };
     c.notNull = function () { added.isNull = false; return this };
     c.null = function () { added.isNull = true; return this };
@@ -119,7 +131,7 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         var length = "";
         if (typeof added.type_length === "object" && added.type === 'ENUM') {
             for (var i=0;i<added.type_length.length;i++) {
-                length += "'"+added.type_length[i]+"'"+(i===added.type_length.length-1?'':', ');
+                length += (typeof added.type_length[i] === 'string' ? "'"+added.type_length[i]+"'": added.type_length[i])+(i===added.type_length.length-1?'':', ');
             }
         } else if (typeof added.type_length === "string")
             length = "'"+added.type_length+"'";
