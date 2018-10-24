@@ -15,7 +15,7 @@ let model = {
         type: T.VARCHAR,
         length: 60,
         notNull: true,
-        regex: /^[a-zA-Z]{0,60}$/ //This is not Module's variable, But can be use later
+        regex: /^[a-zA-Z]{10,60}$/ //This is not Module's variable, But can be use later
     },
     type: {
         type: T.VARCHAR,
