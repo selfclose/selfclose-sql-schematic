@@ -101,8 +101,8 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         added.type = type.toUpperCase(); if (length!==undefined) added.type_length = length; return this };
     c.notNull = function () { added.isNull = false; return this };
     c.null = function () { added.isNull = true; return this };
-    c.default = function (text) { if (text) added.has_default = text; return this };
-    c.comment = function (comment) { added.comment = comment; return this };
+    c.default = function (text) { if (text!==undefined) added.has_default = text; return this };
+    c.comment = function (comment) { if (comment!==undefined) added.comment = comment; return this };
     c.primaryKey = function () { added.pk.push(added.column); return this };
     c.unique = function () { added.unique.push(added.column); return this };
     c.foreignKey = function (column, targetTable, targetTableColumn, onDelete = null, onUpdate = null) {
