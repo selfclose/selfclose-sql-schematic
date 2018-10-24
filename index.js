@@ -60,7 +60,22 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
 
     function c () {}
     c.add = function(column_name) {
-
+        if (typeof column_name === 'object') {
+            for(let c in column_name) {
+                this.add(c);
+                this.type(column_name[c].type, column_name[c].length);
+                if (column_name[c].notNull) this.notNull();
+                if (column_name[c].default) this.default(column_name[c].default);
+                if (column_name[c].comment) this.comment(column_name[c].comment);
+                if (column_name[c].primaryKey) this.primaryKey();
+                if (column_name[c].unique) this.unique();
+                if (column_name[c].foreignKey) {
+                    let o = column_name[c].foreignKey;
+                    this.foreignKey(o.column, o.targetTable, o.targetTableColumn, o.onDelete, o.onUpdate );
+                }
+            }
+            return;
+        }
         if (added.column) {
             inject();
         }
@@ -74,12 +89,12 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         added.type = type.toUpperCase(); if (length!==undefined) added.type_length = length; return this };
     c.notNull = function () { added.isNull = false; return this };
     c.null = function () { added.isNull = true; return this };
-    c.default = function (text) { added.has_default = text; return this };
+    c.default = function (text) { if (text) added.has_default = text; return this };
     c.comment = function (comment) { added.comment = comment; return this };
     c.primaryKey = function () { added.pk.push(added.column); return this };
     c.unique = function () { added.unique.push(added.column); return this };
-    c.foreignKey = function (column, target_table, target_table_column) {
-        added.fk.push({column: column, tar_table: target_table, tar_col: target_table_column, onDelete: null, onUpdate: null});
+    c.foreignKey = function (column, targetTable, targetTableColumn, onDelete = null, onUpdate = null) {
+        added.fk.push({column: column, tar_table: targetTable, tar_col: targetTableColumn, onDelete: onDelete, onUpdate: onUpdate});
         return this
     };
     c.onUpdate = function (action) {
@@ -221,6 +236,7 @@ module.exports = {
     action: action,
 
     default: {
-        CURRENT_TIMESTAMP: 'CURRENT_TIMESTAMP'
+        CURRENT_TIMESTAMP: 'CURRENT_TIMESTAMP',
+        DATETIME: 'DATETIME'
     }
 };
