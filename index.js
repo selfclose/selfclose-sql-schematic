@@ -102,11 +102,11 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
     c.notNull = function () { added.isNull = false; return this };
     c.null = function () { added.isNull = true; return this };
     c.default = function (text) { if (text!==undefined) added.has_default = text; return this };
-    c.comment = function (comment) { if (comment!==undefined) added.comment = comment; return this };
+    c.comment = function (comment) { added.comment = comment; return this };
     c.primaryKey = function () { added.pk.push(added.column); return this };
     c.unique = function () { added.unique.push(added.column); return this };
     c.foreignKey = function (column, targetTable, targetTableColumn, onDelete = null, onUpdate = null) {
-        added.fk.push({column: column, tar_table: targetTable, tar_col: targetTableColumn, onDelete: onDelete, onUpdate: onUpdate});
+        added.fk.push({column: column, tar_table: targetTable, tar_col: targetTableColumn, onDelete: "'"+onDelete+"'", onUpdate: "'"+onUpdate+"'"});
         return this
     };
     c.onUpdate = function (action) {
@@ -142,7 +142,8 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         if (added.type==="VARCHAR" && added.type_length===undefined)
             length = 100;
 
-        concat += (added.firstLoop?"":", ")+"`" + added.column + "` " + added.type + (length===''?"":"(" + length + ")") + " " + (added.isNull ? "NULL" : "NOT NULL") + (added.has_default!==undefined ? " DEFAULT "+defaultVal : "")+(added.comment!==undefined ?" COMMENT '"+added.comment+"'":"");
+        concat += (added.firstLoop?"":", ")+"`" + added.column + "` " + added.type + (length===''?"":(added.type==='DOUBLE'||added.type==='FLOAT')?'':"(" + length + ")") + " " + (added.isNull ? "NULL" : "NOT NULL") + (added.has_default!==undefined ? " DEFAULT "+defaultVal : "")+(added.comment!==undefined ?" COMMENT '"+added.comment+"'":"");
+
         added.firstLoop = false;
         //reset
         added.type = reset.type;
