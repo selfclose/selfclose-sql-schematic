@@ -138,11 +138,15 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         else if (typeof added.type_length === "number") {
             length = added.type_length;
         }
+        else if (typeof added.type_length === "object" && added.type === 'DECIMAL') {
+            length = added.type_length[0]+','+added.type_length[1];
+        }
 
         if (added.type==="VARCHAR" && added.type_length===undefined)
             length = 100;
 
-        concat += (added.firstLoop?"":", ")+"`" + added.column + "` " + added.type + (length===''?"":(added.type==='DOUBLE'||added.type==='FLOAT')?'':"(" + length + ")") + " " + (added.isNull ? "NULL" : "NOT NULL") + (added.has_default!==undefined ? " DEFAULT "+defaultVal : "")+(added.comment!==undefined ?" COMMENT '"+added.comment+"'":"");
+        let add_str = (length===''?"":(added.type==='DOUBLE'||added.type==='FLOAT')?'' : "(" + length + ")")
+        concat += (added.firstLoop?"":", ")+"`" + added.column + "` " + added.type + add_str + " " + (added.isNull ? "NULL" : "NOT NULL") + (added.has_default!==undefined ? " DEFAULT "+defaultVal : "")+(added.comment!==undefined ?" COMMENT '"+added.comment+"'":"");
 
         added.firstLoop = false;
         //reset
