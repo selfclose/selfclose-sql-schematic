@@ -105,7 +105,10 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
     c.comment = function (comment) { added.comment = comment; return this };
     c.primaryKey = function () { added.pk.push(added.column); return this };
     c.unique = function () { added.unique.push(added.column); return this };
-    c.foreignKey = function (sourceColumn, targetTable, targetTableColumn = 'id', onDelete = 'CASCADE', onUpdate = 'CASCADE') {
+    c.foreignKey = function (targetTable, targetTableColumn = 'id', onDelete = 'CASCADE', onUpdate = 'CASCADE') {
+        return this.addForeignKey(added.column, targetTable, targetTableColumn, onDelete, onUpdate);
+    };
+    c.addForeignKey = function (sourceColumn, targetTable, targetTableColumn = 'id', onDelete = 'CASCADE', onUpdate = 'CASCADE') {
         if (onDelete.toUpperCase() === 'DELETE') throw new Error('schematic Error: Cannot use DELETE in onDelete');
         added.fk.push({column: sourceColumn, tar_table: targetTable, tar_col: targetTableColumn, onDelete: onDelete.toUpperCase(), onUpdate: onUpdate.toUpperCase()});
         return this

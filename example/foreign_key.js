@@ -12,8 +12,7 @@ console.log('MYSQL', member.toString());
 var member_type = schema.createTableIfNotExist('member_type', {
     comment: 'pair with member'
 });
-member_type.add('name').type(T.VARCHAR, 20).notNull().unique();
-member_type.foreignKey('name', 'member', 'id', A.CASCADE, A.NO_ACTION);
+member_type.add('name').type(T.VARCHAR, 20).notNull().unique().foreignKey('member', 'id', A.CASCADE, A.NO_ACTION);
 
 console.log('MYSQL', member_type.toString());
 
