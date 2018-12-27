@@ -105,8 +105,9 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
     c.comment = function (comment) { added.comment = comment; return this };
     c.primaryKey = function () { added.pk.push(added.column); return this };
     c.unique = function () { added.unique.push(added.column); return this };
-    c.foreignKey = function (column, targetTable, targetTableColumn, onDelete = null, onUpdate = null) {
-        added.fk.push({column: column, tar_table: targetTable, tar_col: targetTableColumn, onDelete: "'"+onDelete+"'", onUpdate: "'"+onUpdate+"'"});
+    c.foreignKey = function (sourceColumn, targetTable, targetTableColumn = 'id', onDelete = 'CASCADE', onUpdate = 'CASCADE') {
+        if (onDelete.toUpperCase() === 'DELETE') throw new Error('schematic Error: Cannot use DELETE in onDelete');
+        added.fk.push({column: sourceColumn, tar_table: targetTable, tar_col: targetTableColumn, onDelete: onDelete.toUpperCase(), onUpdate: onUpdate.toUpperCase()});
         return this
     };
     c.onUpdate = function (action) {
@@ -176,8 +177,8 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
 
         if (added.fk.length) {
             for (var k in added.fk) {
-                concat+= ", CONSTRAINT `FK__t_"+added.fk[k].tar_table+"` FOREIGN KEY (`"+added.fk[k].column+"`) REFERENCES `"+added.fk[k].tar_table+"` (`"+(added.fk[k].tar_col===undefined?'id':added.fk[k].tar_col)+"`)"
-                    +(added.fk[k].onUpdate===null?"":" ON UPDATE "+added.fk[k].onUpdate)+(added.fk[k].onDelete===null?"":" ON DELETE "+added.fk[k].onDelete);
+                concat+= ", CONSTRAINT `FK__t_"+added.fk[k].tar_table+"` FOREIGN KEY (`"+added.fk[k].column+"`) REFERENCES `"+added.fk[k].tar_table+"` (`"+added.fk[k].tar_col+"`)"
+                    +" ON UPDATE "+added.fk[k].onUpdate+" ON DELETE "+added.fk[k].onDelete;
                 //concat+= ", FOREIGN KEY ('"+added.fk[k].column+"') REFERENCES '"+added.fk[k].tar_table+"' ('"+added.fk[k].tar_col+"')"
             }
         }
