@@ -47,8 +47,7 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
     //todo: auto_id can turn of
     //todo: ENUM Type
 
-    table = "CREATE TABLE "+(ifNotExist?"IF NOT EXISTS ":"")+"`"+table+"` (";
-    var concat = "`id` INT NOT NULL AUTO_INCREMENT, ";
+    var concat = auto_id ? '`id` INT NOT NULL AUTO_INCREMENT, ' : '';
     added = {
         firstLoop: true,
         column: undefined,
@@ -161,38 +160,43 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         added.has_default = reset.has_default;
     };
     keyDefine = function () {
+        let end = '';
         //add created_at, updated_at
-        if (add_timestamp) concat += ", `created_at` DATETIME NOT NULL, `updated_at` DATETIME NOT NULL";
+        if (add_timestamp) end += ", `created_at` DATETIME NOT NULL, `updated_at` DATETIME NOT NULL";
 
-        concat += ", PRIMARY KEY (`id`";
+        end += ", PRIMARY KEY (`id`";
         if (added.pk.length) {
             for(var k in added.pk) {
-                concat += ", `"+added.pk[k]+"`";
+                end += ", `"+added.pk[k]+"`";
             }
         }
-        concat += ")";
+        end += ")";
 
         if (added.unique.length) {
             for (var k in added.unique) {
-                concat += ", UNIQUE INDEX `"+added.unique[k]+"` (`"+added.unique[k]+"`)";
+                end += ", UNIQUE INDEX `"+added.unique[k]+"` (`"+added.unique[k]+"`)";
             }
         }
 
         if (added.fk.length) {
             for (var k in added.fk) {
-                concat+= ", CONSTRAINT `FK__t_"+added.fk[k].tar_table+"` FOREIGN KEY (`"+added.fk[k].column+"`) REFERENCES `"+added.fk[k].tar_table+"` (`"+added.fk[k].tar_col+"`)"
+                end+= ", CONSTRAINT `FK__"+table+"_"+added.fk[k].column+"_2_"+added.fk[k].tar_table+"_"+added.fk[k].tar_col+"` FOREIGN KEY (`"+added.fk[k].column+"`) REFERENCES `"+added.fk[k].tar_table+"` (`"+added.fk[k].tar_col+"`)"
                     +" ON UPDATE "+added.fk[k].onUpdate+" ON DELETE "+added.fk[k].onDelete;
-                //concat+= ", FOREIGN KEY ('"+added.fk[k].column+"') REFERENCES '"+added.fk[k].tar_table+"' ('"+added.fk[k].tar_col+"')"
+                //end+= ", FOREIGN KEY ('"+added.fk[k].column+"') REFERENCES '"+added.fk[k].tar_table+"' ('"+added.fk[k].tar_col+"')"
             }
         }
 
-        concat+= ")";
+        end+= ")";
         if (table_comment!==undefined)
-            concat+= " COMMENT='"+table_comment+"'";
-        concat += " COLLATE='utf8_general_ci' ENGINE=InnoDB";
+            end+= " COMMENT='"+table_comment+"'";
+        end += " COLLATE='utf8_general_ci' ENGINE=InnoDB";
+        return end;
     };
 
-    c.toString = function() { inject(); keyDefine(); return added.had_error===null ? table + concat:"ERROR: "+added.had_error; };
+    c.toString = function() {
+        if (added.type) inject(); //trigger add() if still have last data
+        return added.had_error===null ? "CREATE TABLE "+(ifNotExist?"IF NOT EXISTS ":"")+"`"+table+"` (" + concat + keyDefine():"ERROR: "+added.had_error;
+    };
     return c;
 };
 module.exports = {
