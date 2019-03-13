@@ -62,7 +62,9 @@ var schema = FunctionHere()
     comment: '',
     id: true, //Auto create id column with auto increment and primary key
     timestamp: true, //Auto create 'created_at' and 'updated_at'
-    timestamp_type: 'DATETIME' // type can be 'DATETIME' or 'NUMBER'
+    timestamp_type: 'DATETIME', // type can be 'DATETIME' or 'NUMBER'
+    charset: 'utf8_general_ci',
+    engine: 'InnoDB'
 }
 ```
 

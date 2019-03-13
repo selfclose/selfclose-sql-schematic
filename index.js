@@ -42,12 +42,19 @@ const action = {
     SET_DEFAULT: 'SET DEFAULT'
 };
 
-var create = function (ifNotExist, table, table_comment, auto_id = true, add_timestamp = true) {
-
+var create = function (ifNotExist, table, option) {
+    var opt = {
+        comment: option.comment || '',
+        auto_id: option.id || false,
+        add_timestamp: option.timestamp || true,
+        timestamp_type: option.timestamp_type || 'DATETIME',
+        charset: option.charset || 'utf8_general_ci',
+        engine: option.engine || 'InnoDB'
+    };
     //todo: auto_id can turn of
     //todo: ENUM Type
 
-    var concat = auto_id ? '`id` INT NOT NULL AUTO_INCREMENT, ' : '';
+    var concat = opt.auto_id ? '`id` INT NOT NULL AUTO_INCREMENT, ' : '';
     added = {
         firstLoop: true,
         column: undefined,
@@ -162,7 +169,12 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
     keyDefine = function () {
         let end = '';
         //add created_at, updated_at
-        if (add_timestamp) end += ", `created_at` DATETIME NOT NULL, `updated_at` DATETIME NOT NULL";
+        if (opt.add_timestamp) {
+            if (opt.timestamp_type === 'DATETIME' || opt.timestamp_type === 'DATE')
+                end += ", `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP";
+            else
+                end += ", `created_at` "+opt.timestamp_type+" NULL, `updated_at` "+opt.timestamp_type+" NULL";
+        }
 
         end += ", PRIMARY KEY (`id`";
         if (added.pk.length) {
@@ -187,9 +199,9 @@ var create = function (ifNotExist, table, table_comment, auto_id = true, add_tim
         }
 
         end+= ")";
-        if (table_comment!==undefined)
-            end+= " COMMENT='"+table_comment+"'";
-        end += " COLLATE='utf8_general_ci' ENGINE=InnoDB";
+        if (opt.comment)
+            end+= " COMMENT='"+opt.comment+"'";
+        end += " COLLATE='"+opt.charset+"' ENGINE="+opt.engine;
         return end;
     };
 
@@ -228,12 +240,12 @@ module.exports = {
      ENGINE=InnoDB
      ;
      */
-    createTable: function (table, {comment}) {
-        return create(false, table, comment);
+    createTable: function (table, option) {
+        return create(false, table, option);
     },
 
-    createTableIfNotExist: function (table, {comment, id = true, timestamp = true}) {
-        return create(true, table, comment, id, timestamp);
+    createTableIfNotExist: function (table, option) {
+        return create(true, table, option);
     },
 
     customQuery: function (table, sqlValue, primaryKey) {
@@ -254,6 +266,10 @@ module.exports = {
 
     dropTableIfExist: function (table) {
         return "DROP TABLE IF EXISTS `"+table+"`";
+    },
+
+    updateTableCharset(table, charset) {
+        return 'ALTER TABLE `'+table+'` DEFAULT CHARSET='+charset+' COLLATE '+charset+'_general_ci';
     },
 
     //for auto complete
