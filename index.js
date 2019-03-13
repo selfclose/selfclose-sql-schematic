@@ -45,7 +45,7 @@ const action = {
 var create = function (ifNotExist, table, option) {
     var opt = {
         comment: option.comment || '',
-        auto_id: option.id || false,
+        auto_id: option.id === undefined ? true : option.id,
         add_timestamp: option.timestamp || true,
         timestamp_type: option.timestamp_type || 'DATETIME',
         charset: option.charset || 'utf8_general_ci',
@@ -176,7 +176,8 @@ var create = function (ifNotExist, table, option) {
                 end += ", `created_at` "+opt.timestamp_type+" NULL, `updated_at` "+opt.timestamp_type+" NULL";
         }
 
-        end += ", PRIMARY KEY (`id`";
+        end += ", PRIMARY KEY (";
+        if (opt.auto_id) end += '`id`';
         if (added.pk.length) {
             for(var k in added.pk) {
                 end += ", `"+added.pk[k]+"`";
